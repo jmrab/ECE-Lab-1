@@ -2,40 +2,174 @@
 #define RED_LED BIT0 //P1.0
 #define GREEN_LED BIT6 //P6.6
 #define BUTTON1 BIT1 //push button P4.1
-#define BUTTON2 BIT3 //push button P2.3
+#define BUTTON2 BIT2 //push button P2.3
 
-void main(void)
-{
-    WDTCTL = WDTPW | WDTHOLD;
-    P1OUT &= ~BIT0;  //p1.0 red led
-    P6OUT &= ~BIT6; //p6.6 green led
-    P1DIR |= BIT0;
-    P6DIR |= BIT6;
+//-------------------------------------------------------------------------
+void gpioInitIn(unsigned int Port, unsigned char Pin){ //Input Initialization
 
-    P4DIR &= ~BIT1;//clear P4.1(s1)
-    P4REN |= BIT1;//Enable pull up/down resistor
-    P4OUT |= BIT1;//Make resistor a pull up
+    if ( Port ==1)
 
-    P2DIR &= ~BIT3;//clear P2.3(s2)
-    P2REN |= BIT3;//Enable pull up/down resistor
-    P2OUT |= BIT3;//Make resistor a pull up
+    {   P1DIR &= ~Pin;  // Set GPIO_PIN as input (0)
+        P1REN |= Pin;   // Enable pull-up/pull-down resistor
+        P1OUT |= Pin;   // Set as output
+    }
 
-    PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
-                                           // to activate previously configured port settings
+    else if ( Port ==2)
 
-    while(1){
-        if((P4IN & BUTTON1) == 0x00){
-        _delay_cycles(5000);
-        if((P4IN & BUTTON1) == 0x00){
-            P1OUT ^= RED_LED;
-            } while((P4IN & BUTTON1) == 0x00);
+    {   P2DIR &= ~Pin;  // Set GPIO_PIN as input (0)
+        P2REN |= Pin;   // Enable pull-up/pull-down resistor
+        P2OUT |= Pin;   // Set as output
+    }
+
+    else if ( Port ==4)
+
+        {   P4DIR &= ~Pin;  // Set GPIO_PIN as input (0)
+            P4REN |= Pin;   // Enable pull-up/pull-down resistor
+            P4OUT |= Pin;   // Set as output
         }
 
-       else if((P2IN & BUTTON2) == 0x00){ // P2 IN
-         _delay_cycles(5000);
-        if((P2IN & BUTTON2) == 0x00){
-            P6OUT ^= GREEN_LED;
-            }
-        while((P2IN & BUTTON2) == 0x00);}
+
+    else if ( Port ==6)
+
+    {  P6DIR &= ~Pin;  // Set GPIO_PIN as input (0)
+        P6REN |= Pin;   // Enable pull-up/pull-down resistor
+        P6OUT |= Pin;   // Set as output
+    }
 }
+
+void gpioInitOut(unsigned int Port, unsigned char Pin){ //output initialization
+    if ( Port ==1)
+
+        {   P1DIR |= Pin;  // Set GPIO_PIN as input (0)
+            P1OUT &= ~ Pin;   // Set as input
+        }
+
+        else if ( Port ==2)
+
+        {   P2DIR |= Pin;  // Set GPIO_PIN as input (0)
+            P2OUT &= ~ Pin;   // Set as input
+        }
+
+        else if ( Port ==4)
+
+        {   P4DIR |= Pin;  // Set GPIO_PIN as input (0)
+            P4OUT &= ~ Pin;   // Set as input
+        }
+
+
+        else if ( Port ==6)
+
+        {  P6DIR |= Pin;  // Set GPIO_PIN as input (0)
+           P6OUT &= ~ Pin;   // Set as input
+        }
+}
+
+unsigned char gpioInitStatus(unsigned int Port, unsigned char Pin){ //char Direction
+    unsigned char value;
+    if ( Port ==1)
+
+        {   value = P1IN & Pin;  // read from PIN input
+
+        }
+
+        else if ( Port ==2)
+
+        {   value = P2IN & Pin;  // read from PIN input
+        }
+
+        else if ( Port ==4)
+
+            {   value = P4IN & Pin;  // read from PIN input
+            }
+
+
+        else if ( Port ==6)
+
+        {  value = P6IN & Pin;  // read from PIN input
+        }
+
+    return value;
+}
+
+
+
+
+void gpioWrite(unsigned int Port, unsigned char Pin, unsigned char value) {
+
+
+    if ( Port ==1)
+
+            {    if (value == 1) {
+                    P1OUT |= Pin;  // Write value in P1OUT to see output as 1
+                }
+
+                else if (value == 0) {
+                    P1OUT &=~ Pin;  // Write value in P1OUT to see output as 0
+               }
+            }
+
+    else if ( Port ==2)
+
+    {    if (value == 1) {
+                        P2OUT |= Pin;  // Write value in P1OUT to see output as 1
+                    }
+
+                    else if (value == 0) {
+                        P2OUT &=~ Pin;  // Write value in P1OUT to see output as 0
+                   }
+                }
+    else if ( Port ==4)
+
+    {    if (value == 1) {
+                        P4OUT |= Pin;  // Write value in P1OUT to see output as 1
+                    }
+
+                    else if (value == 0) {
+                        P4OUT &=~ Pin;  // Write value in P1OUT to see output as 0
+                   }
+                }
+
+
+    else if ( Port ==6)
+
+    {    if (value == 1) {
+                        P6OUT |= Pin;  // Write value in P1OUT to see output as 1
+                    }
+
+                    else if (value == 0) {
+                        P6OUT &=~ Pin;  // Write value in P1OUT to see output as 0
+                   }
+                }
+
+  }
+
+
+//--------------------------------------------------------------------------
+void main(void)
+{
+WDTCTL = WDTPW | WDTHOLD;
+
+PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
+                                           // to activate previously configured port settings
+
+gpioInitIn(4,BIT1); //input
+gpioInitIn(2,BIT3); //input
+gpioInitOut(1,BIT0); //output
+gpioInitOut(6,BIT6); //output
+
+unsigned char value = 0;
+while(1){
+    value = gpioInitStatus(4, BIT1);
+
+        if(value == 0x00){
+            _delay_cycles(5000);
+
+            gpioWrite(1, BIT0, 1); }
+
+            else
+            gpioWrite(1, BIT0, 0);
+        _delay_cycles(5000);
+
+}
+//return 0;
 }
